@@ -13,7 +13,7 @@ struct Edge {
 
 class Graph {
 public:
-    int V; // Number of vertices
+    int V;
     vector<Edge> edges;
 
     Graph(int V) : V(V) {}
@@ -35,7 +35,7 @@ public:
             }
         }
 
-        // Check for negative-weight cycles
+        
         for (const auto &edge : edges) {
             if (distance[edge.source] != INF && 
                 distance[edge.source] + edge.weight < distance[edge.destination]) {
@@ -60,25 +60,25 @@ public:
 };
 
 int main() {
-    int floors = 5; // Number of floors
-    Graph g(floors * 10); // Assuming 10 rooms per floor
+    int floors = 5; 
+    Graph g(floors * 10);
 
     
-    g.addEdge(0, 10, 5); // From room 0 to room 10 (upstairs)
+    g.addEdge(0, 10, 5); 
     g.addEdge(1, 11, 5);
-    g.addEdge(10, 20, 3); // Room on floor 1 to room on floor 2
+    g.addEdge(10, 20, 3);
     g.addEdge(2, 12, 4);
     g.addEdge(11, 21, 2);
     g.addEdge(20, 30, 1);
     g.addEdge(21, 31, 2);
-    g.addEdge(0, 1, 1);   // Moving between rooms on the same floor
+    g.addEdge(0, 1, 1);   
     g.addEdge(1, 2, 1);
     g.addEdge(2, 3, 1);
     g.addEdge(3, 4, 1);
     g.addEdge(4, 5, 1);
-    // More edges can be added based on the building layout
+   
 
-    int startRoom = 0; // Starting room for evacuation
+    int startRoom = 0; 
     g.bellmanFord(startRoom);
 
     return 0;
