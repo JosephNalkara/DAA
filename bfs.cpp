@@ -4,7 +4,7 @@
 
 using namespace std;
 
-// Function to perform BFS
+
 void BFS(int startVertex, vector<vector<int>>& adjList, vector<bool>& visited) {
     queue<int> q;
     visited[startVertex] = true;
@@ -38,7 +38,7 @@ int main() {
         int u, v;
         cin >> u >> v;
         adjList[u].push_back(v);
-        adjList[v].push_back(u); // For undirected graph, add the reverse edge
+        adjList[v].push_back(u);
     }
 
     vector<bool> visited(numVertices, false);
