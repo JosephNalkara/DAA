@@ -1,122 +1,116 @@
 #include <iostream>
-#include <vector>
-#include <queue>
-#include <limits>
-#include <utility> 
-
+#include <climits>
 using namespace std;
 
-const int INF = numeric_limits<int>::max();
 
-struct Edge {
-    int to;
-    int weight;
-};
-
-
-void printPriorityQueue(priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq) {
-    cout << "Priority Queue State: ";
-    vector<pair<int, int>> elements;
-    while (!pq.empty()) {
-        elements.push_back(pq.top());
-        pq.pop();
+void initializeGraph(int adj[100][100], int V) {
+    for (int i = 0; i < V; i++) {
+        for (int j = 0; j < V; j++) {
+            adj[i][j] = 0; // No edge initially
+        }
     }
-    for (const auto& elem : elements) {
-        cout << "[" << elem.second << ", " << elem.first << "] ";
-    }
-    cout << endl;
 }
 
 
-void printDistances(const vector<int>& dist) {
-    cout << "Current distances: ";
-    for (int i = 0; i < dist.size(); ++i) {
-        if (dist[i] == INF)
-            cout << "INF ";
-        else
-            cout << dist[i] << " ";
-    }
-    cout << endl;
+void addEdge(int adj[100][100], int u, int v, int w) {
+    adj[u][v] = w; // Directed graph
+    // Uncomment the next line for an undirected graph:
+    // adj[v][u] = w; 
 }
 
-vector<int> dijkstra(int start, const vector<vector<Edge>>& graph) {
-    int n = graph.size();
-    vector<int> dist(n, INF);
-    dist[start] = 0;
 
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
-    pq.push({0, start});
+int findMinDistance(int distance[], bool visited[], int V) {
+    int minDist = INT_MAX, minIndex = -1;
 
-    cout << "Initial Priority Queue State: ";
-    printPriorityQueue(pq);
+    for (int i = 0; i < V; i++) {
+        if (!visited[i] && distance[i] < minDist) {
+            minDist = distance[i];
+            minIndex = i;
+        }
+    }
+    return minIndex;
+}
 
-    cout << "Initial Distances: ";
-    printDistances(dist);
 
-    while (!pq.empty()) {
-        int u = pq.top().second;
-        int d = pq.top().first;
-        pq.pop();
+void dijkstra(int adj[100][100], int V, int src) {
+    int distance[100];    
+    bool visited[100];   
+    int predecessor[100];
+    
+    for (int i = 0; i < V; i++) {
+        distance[i] = INT_MAX;
+        visited[i] = false;
+        predecessor[i] = -1; 
+    }
 
-        cout << "Processing node " << u << " with distance " << d << endl;
+    distance[src] = 0;
 
-        if (d > dist[u]) continue;
+   
+    for (int count = 0; count < V - 1; count++) {
+       
+        int u = findMinDistance(distance, visited, V);
+        if (u == -1) break;
+        visited[u] = true; 
 
-     
-        for (const Edge& e : graph[u]) {
-            int v = e.to;
-            int weight = e.weight;
-
-            
-            if (dist[u] + weight < dist[v]) {
-                dist[v] = dist[u] + weight;
-                pq.push({dist[v], v});
-
-                
-                cout << "Updated Priority Queue State after adding node " << v << " with distance " << dist[v] << ": ";
-                printPriorityQueue(pq);
-
-                
-                cout << "Distances after update: ";
-                printDistances(dist);
+       
+        for (int v = 0; v < V; v++) {
+            if (adj[u][v] != 0 && !visited[v] && distance[u] + 
+            adj[u][v] < distance[v]) {
+                distance[v] = distance[u] + adj[u][v];
+                predecessor[v] = u;
             }
         }
     }
 
-    return dist;
+    
+    cout << "Vertex\tDistance from Source\tPredecessor\n";
+    for (int i = 0; i < V; i++) {
+        cout << i << "\t" << distance[i] << "\t\t\t";
+        if (predecessor[i] == -1) {
+            cout << "NIL" << endl;
+        } else {
+            cout << predecessor[i] << endl;
+        }
+    }
 }
 
 int main() {
-    int n, m;
-    cout << "Enter the number of nodes: ";
-    cin >> n;
+    int V, E;
+    cout << "Enter the number of vertices: ";
+    cin >> V;
 
-    vector<vector<Edge>> graph(n);
+    if (V > 100) {
+        cout << "Maximum number of vertices exceeded. Exiting...\n";
+        return 1;
+    }
+
+    int adj[100][100];
+   
+    initializeGraph(adj, V);
 
     cout << "Enter the number of edges: ";
-    cin >> m;
+    cin >> E;
 
-    cout << "Enter the edges (from, to, weight) for each edge:\n";
-    for (int i = 0; i < m; ++i) {
-        int from, to, weight;
-        cin >> from >> to >> weight;
-        graph[from].push_back({to, weight});
+   
+    cout << "Enter the edges (u v w) where u and v are 
+    vertices (0-based) and w is the weight:\n";
+    for (int i = 0; i < E; i++) {
+        int u, v, w;
+        cin >> u >> v >> w;
+        addEdge(adj, u, v, w);
     }
 
-    int start;
-    cout << "Enter the starting node: ";
-    cin >> start;
+    int startVertex;
+    cout << "Enter the starting vertex: ";
+    cin >> startVertex;
 
-    vector<int> distances = dijkstra(start, graph);
-
-    cout << "Final shortest distances from node " << start << ":\n";
-    for (int i = 0; i < distances.size(); ++i) {
-        if (distances[i] == INF)
-            cout << "Distance to node " << i << " is INF (unreachable)\n";
-        else
-            cout << "Distance to node " << i << " is " << distances[i] << endl;
+    if (startVertex < 0 || startVertex >= V) {
+        cout << "Invalid starting vertex. Exiting...\n";
+        return 1;
     }
+
+    cout << "Dijkstra's Algorithm starting from vertex " << startVertex << ":\n";
+    dijkstra(adj, V, startVertex);
 
     return 0;
 }
-
