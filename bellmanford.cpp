@@ -1,86 +1,76 @@
 #include <iostream>
-#include <vector>
-#include <limits>
-#include <tuple>
+#include <climits> 
 
 using namespace std;
 
-const int INF = numeric_limits<int>::max();
 
-struct Edge {
-    int source, destination, weight;
-};
-
-class Graph {
-public:
-    int V;
-    vector<Edge> edges;
-
-    Graph(int V) : V(V) {}
-
-    void addEdge(int u, int v, int w) {
-        edges.push_back({u, v, w});
+bool bellmanFord(int vertices, int edges, int edgeList[][3], int source) {
+    // Step 1: Initialize distances to all vertices as infinite 
+    and the source distance to 0
+    int distance[vertices];
+    for (int i = 0; i < vertices; i++) {
+        distance[i] = INT_MAX;
     }
+    distance[source] = 0;
 
-    void bellmanFord(int start) {
-        vector<int> distance(V, INF);
-        distance[start] = 0;
 
-        for (int i = 1; i < V; i++) {
-            for (const auto &edge : edges) {
-                if (distance[edge.source] != INF && 
-                    distance[edge.source] + edge.weight < distance[edge.destination]) {
-                    distance[edge.destination] = distance[edge.source] + edge.weight;
-                }
-            }
-        }
+    for (int i = 1; i <= vertices - 1; i++) {
+        for (int j = 0; j < edges; j++) {
+            int u = edgeList[j][0];
+            int v = edgeList[j][1];
+            int weight = edgeList[j][2];
 
-        
-        for (const auto &edge : edges) {
-            if (distance[edge.source] != INF && 
-                distance[edge.source] + edge.weight < distance[edge.destination]) {
-                cout << "Graph contains a negative-weight cycle" << endl;
-                return;
-            }
-        }
-
-        printSolution(distance);
-    }
-
-    void printSolution(const vector<int> &distance) {
-        cout << "Vertex Distance from Source:" << endl;
-        for (int i = 0; i < V; i++) {
-            if (distance[i] == INF) {
-                cout << i << "\t\t" << "Infinity" << endl;
-            } else {
-                cout << i << "\t\t" << distance[i] << endl;
+            if (distance[u] != INT_MAX && distance[u] + weight < distance[v]){
+                distance[v] = distance[u] + weight;
             }
         }
     }
-};
+
+   
+    for (int j = 0; j < edges; j++) {
+        int u = edgeList[j][0];
+        int v = edgeList[j][1];
+        int weight = edgeList[j][2];
+
+        if (distance[u] != INT_MAX && distance[u] + weight < distance[v]) {
+            return false;
+        }
+    }
+
+   
+    cout << "Vertex Distance from Source:" << endl;
+    for (int i = 0; i < vertices; i++) {
+        if (distance[i] == INT_MAX) {
+            cout << i << " \t INF" << endl;
+        } else {
+            cout << i << " \t " << distance[i] << endl;
+        }
+    }
+    return true;
+}
 
 int main() {
-    int floors = 5; 
-    Graph g(floors * 10);
+    int vertices, edges;
+    cout << "Enter the number of vertices: ";
+    cin >> vertices;
+    cout << "Enter the number of edges: ";
+    cin >> edges;
 
-    
-    g.addEdge(0, 10, 5); 
-    g.addEdge(1, 11, 5);
-    g.addEdge(10, 20, 3);
-    g.addEdge(2, 12, 4);
-    g.addEdge(11, 21, 2);
-    g.addEdge(20, 30, 1);
-    g.addEdge(21, 31, 2);
-    g.addEdge(0, 1, 1);   
-    g.addEdge(1, 2, 1);
-    g.addEdge(2, 3, 1);
-    g.addEdge(3, 4, 1);
-    g.addEdge(4, 5, 1);
-   
+    int edgeList[edges][3];
+    cout << "Enter the edges (u v weight):" << endl;
+    for (int i = 0; i < edges; i++) {
+        cin >> edgeList[i][0] >> edgeList[i][1] >> edgeList[i][2];
+    }
 
-    int startRoom = 0; 
-    g.bellmanFord(startRoom);
+    int source;
+    cout << "Enter the source vertex: ";
+    cin >> source;
+
+    if (bellmanFord(vertices, edges, edgeList, source)) {
+        cout << "No negative weight cycle detected." << endl;
+    } else {
+        cout << "Negative weight cycle detected!" << endl;
+    }
 
     return 0;
 }
-
