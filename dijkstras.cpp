@@ -1,116 +1,96 @@
 #include <iostream>
-#include <climits>
+#include <vector>
+#include <climits>  // For INT_MAX
+#include <queue>    // For priority_queue
+
 using namespace std;
 
+// Dijkstra's Algorithm to find the shortest path
+void dijkstra(int nodes, vector<vector<pair<int, int>>>& adj, int start) {
+    // Create a priority queue to store the pair (distance, node)
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
 
-void initializeGraph(int adj[100][100], int V) {
-    for (int i = 0; i < V; i++) {
-        for (int j = 0; j < V; j++) {
-            adj[i][j] = 0; // No edge initially
-        }
-    }
-}
-
-
-void addEdge(int adj[100][100], int u, int v, int w) {
-    adj[u][v] = w; // Directed graph
-    // Uncomment the next line for an undirected graph:
-    // adj[v][u] = w; 
-}
-
-
-int findMinDistance(int distance[], bool visited[], int V) {
-    int minDist = INT_MAX, minIndex = -1;
-
-    for (int i = 0; i < V; i++) {
-        if (!visited[i] && distance[i] < minDist) {
-            minDist = distance[i];
-            minIndex = i;
-        }
-    }
-    return minIndex;
-}
-
-
-void dijkstra(int adj[100][100], int V, int src) {
-    int distance[100];    
-    bool visited[100];   
-    int predecessor[100];
+    // Create a vector to store the shortest distance to each node
+    vector<int> dist(nodes, INT_MAX);
     
-    for (int i = 0; i < V; i++) {
-        distance[i] = INT_MAX;
-        visited[i] = false;
-        predecessor[i] = -1; 
-    }
+    // Distance to the start node is 0
+    dist[start] = 0;
+    pq.push({0, start});  // Push the start node with distance 0
 
-    distance[src] = 0;
+    while (!pq.empty()) {
+        // Get the node with the smallest distance
+        int u = pq.top().second;
+        int d = pq.top().first;
+        pq.pop();
 
-   
-    for (int count = 0; count < V - 1; count++) {
-       
-        int u = findMinDistance(distance, visited, V);
-        if (u == -1) break;
-        visited[u] = true; 
+        // If this distance is already larger than the current known shortest distance, skip it
+        if (d > dist[u]) continue;
 
-       
-        for (int v = 0; v < V; v++) {
-            if (adj[u][v] != 0 && !visited[v] && distance[u] + 
-            adj[u][v] < distance[v]) {
-                distance[v] = distance[u] + adj[u][v];
-                predecessor[v] = u;
+        // Check all the neighbors of node u
+        for (auto& neighbor : adj[u]) {
+            int v = neighbor.first;     // Neighbor node
+            int weight = neighbor.second;  // Edge weight
+
+            // If a shorter path to v is found
+            if (dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                pq.push({dist[v], v});
             }
         }
     }
 
-    
-    cout << "Vertex\tDistance from Source\tPredecessor\n";
-    for (int i = 0; i < V; i++) {
-        cout << i << "\t" << distance[i] << "\t\t\t";
-        if (predecessor[i] == -1) {
-            cout << "NIL" << endl;
+    // Print the shortest distances from the start node
+    cout << "Shortest distances from node " << start << " are:\n";
+    for (int i = 0; i < nodes; i++) {
+        if (dist[i] == INT_MAX) {
+            cout << "Node " << i << " is unreachable.\n";
         } else {
-            cout << predecessor[i] << endl;
+            cout << "Node " << i << ": " << dist[i] << "\n";
         }
     }
 }
 
+// Function to print the adjacency list
+void printAdjacencyList(int nodes, const vector<vector<pair<int, int>>>& adj) {
+    cout << "Adjacency List:\n";
+    for (int i = 0; i < nodes; i++) {
+        cout << "Node " << i << ": ";
+        for (const auto& neighbor : adj[i]) {
+            cout << "(" << neighbor.first << ", " << neighbor.second << ") ";
+        }
+        cout << "\n";
+    }
+}
+
 int main() {
-    int V, E;
-    cout << "Enter the number of vertices: ";
-    cin >> V;
+    int nodes, edges, start;
 
-    if (V > 100) {
-        cout << "Maximum number of vertices exceeded. Exiting...\n";
-        return 1;
+    // Input number of nodes and edges
+    cout << "Enter number of nodes: ";
+    cin >> nodes;
+    cout << "Enter number of edges: ";
+    cin >> edges;
+
+    // Adjacency list representation of the graph
+    vector<vector<pair<int, int>>> adj(nodes);
+
+    cout << "Enter edges (u v weight): \n";
+    for (int i = 0; i < edges; i++) {
+        int u, v, weight;
+        cin >> u >> v >> weight;
+        adj[u].push_back({v, weight});
+        adj[v].push_back({u, weight});  // For undirected graph
     }
 
-    int adj[100][100];
-   
-    initializeGraph(adj, V);
+    // Print the adjacency list
+    printAdjacencyList(nodes, adj);
 
-    cout << "Enter the number of edges: ";
-    cin >> E;
+    // Input the starting node
+    cout << "Enter the start node: ";
+    cin >> start;
 
-   
-    cout << "Enter the edges (u v w) where u and v are 
-    vertices (0-based) and w is the weight:\n";
-    for (int i = 0; i < E; i++) {
-        int u, v, w;
-        cin >> u >> v >> w;
-        addEdge(adj, u, v, w);
-    }
-
-    int startVertex;
-    cout << "Enter the starting vertex: ";
-    cin >> startVertex;
-
-    if (startVertex < 0 || startVertex >= V) {
-        cout << "Invalid starting vertex. Exiting...\n";
-        return 1;
-    }
-
-    cout << "Dijkstra's Algorithm starting from vertex " << startVertex << ":\n";
-    dijkstra(adj, V, startVertex);
+    // Call Dijkstra's algorithm
+    dijkstra(nodes, adj, start);
 
     return 0;
 }
